@@ -12,7 +12,7 @@ For example
 const fields = [
   {
     label: "Name",
-    placeholder: "You name will be displayed",
+    placeholder: "The name will be displayed",
     name: "name",
     value: ""
   },
