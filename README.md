@@ -1,7 +1,10 @@
 # React Native Dynamic Form
 Ther properties:
+
 fields - define form
+
 validationSchema - define yup form validation
+
 onSubmit - handle submit event
 
 for example 
