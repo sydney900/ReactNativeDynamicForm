@@ -8,11 +8,11 @@ import {
   ActivityIndicator,
   Switch,
   Picker,
-  KeyboardAvoidingView,
-  ScrollView
+  KeyboardAvoidingView
 } from "react-native";
 import DatePicker from "react-native-datepicker";
 import { Formik } from "formik";
+import { ScrollView } from "react-native-gesture-handler";
 
 const CheckBox = props => {
   const { formikProps, field, ...rest } = props;
@@ -21,8 +21,9 @@ const CheckBox = props => {
       <View style={styles.row}>
         <Text style={styles.label}>{field.label + ":"}</Text>
         <Switch
-          onChangeText={value => formikProps.setFieldValue(field.name, value)}
           {...rest}
+          value={formikProps.values[field.name]}
+          onValueChange={value => formikProps.setFieldValue(field.name, value)}
         />
       </View>
       <Text style={styles.error}>
@@ -37,10 +38,13 @@ const MyDatePicker = props => {
 
   return (
     <View>
-      <View style={styles.row}>
+      <View style={[styles.row, { alignItems: "center" }]}>
         <Text style={styles.label}>{field.label + ":"}</Text>
         <DatePicker
-          style={styles.input}
+          style={[styles.datepicker, { borderBottomColor: "transparent" }]}
+          customStyles={{
+            dateInput: { marginLeft: 3 }
+          }}
           name={field.name}
           mode="date"
           date={formikProps.values[field.name]}
@@ -77,18 +81,21 @@ const Select = props => {
 
   return (
     <View>
-      <View style={styles.row}>
+      <View style={[styles.row, { alignItems: "center" }]}>
         <Text style={styles.label}>{field.label + ":"}</Text>
         <Picker
-          selectedValue={field.value}
-          style={styles.input}
-          //onChangeText={formikProps.handleChange(field.name)}
+          style={styles.datepicker}
+          selectedValue={formikProps.values[field.name]}
           onValueChange={(itemValue, itemIndex) =>
             formikProps.setFieldValue(field.name, itemValue)
           }
         >
           {field.options.map(option => (
-            <Picker.Item label={option.label} value={option.value} />
+            <Picker.Item
+              label={option.label}
+              value={option.value}
+              key={option.value}
+            />
           ))}
         </Picker>
       </View>
@@ -139,6 +146,7 @@ const DynamicForm = props => {
         !initialValues[field.name] && (initialValues[field.name] = field.value)
     );
 
+  const lastFieldIndex = !fields ? fields.length - 1 : -1;
   return (
     <Formik
       onSubmit={props.onSubmit}
@@ -147,15 +155,16 @@ const DynamicForm = props => {
     >
       {formikProps => {
         return (
-          <KeyboardAvoidingView behavior="padding">
-            <ScrollView>
-              {fields.map(field => {
+          <ScrollView>
+            <KeyboardAvoidingView>
+              {fields.map((field, index) => {
                 if (field.type === "select") {
                   return (
                     <Select
                       formikProps={formikProps}
                       field={field}
                       key={field.name}
+                      returnKeyType={index === lastFieldIndex ? "send" : "next"}
                     />
                   );
                 }
@@ -166,6 +175,7 @@ const DynamicForm = props => {
                       formikProps={formikProps}
                       field={field}
                       key={field.name}
+                      returnKeyType={index === lastFieldIndex ? "send" : "next"}
                     />
                   );
                 }
@@ -176,6 +186,8 @@ const DynamicForm = props => {
                       formikProps={formikProps}
                       field={field}
                       key={field.name}
+                      returnKeyType={index === lastFieldIndex ? "send" : "next"}
+                      autoFocus={index === 0 ? true : false}
                     />
                   );
                 }
@@ -186,6 +198,8 @@ const DynamicForm = props => {
                       formikProps={formikProps}
                       field={field}
                       key={field.name}
+                      returnKeyType={index === lastFieldIndex ? "send" : "next"}
+                      autoFocus={index === 0 ? true : false}
                     />
                   );
                 }
@@ -196,6 +210,7 @@ const DynamicForm = props => {
                       formikProps={formikProps}
                       field={field}
                       key={field.name}
+                      returnKeyType={index === lastFieldIndex ? "send" : "next"}
                     />
                   );
                 }
@@ -205,6 +220,8 @@ const DynamicForm = props => {
                     formikProps={formikProps}
                     field={field}
                     key={field.name}
+                    returnKeyType={index === lastFieldIndex ? "send" : "next"}
+                    autoFocus={index === 0 ? true : false}
                   />
                 );
               })}
@@ -219,20 +236,13 @@ const DynamicForm = props => {
                     disabled={!formikProps.isValid}
                     onPress={formikProps.handleSubmit}
                   />
-                  <Button
-                    style={styles.input}
-                    title="Back"
-                    onKeyPress={() => props.navigation.goBack()}
-                  >
-                    Back
-                  </Button>
                   <Text style={styles.error}>
                     {formikProps.errors.submitError}
                   </Text>
                 </Fragment>
               )}
-            </ScrollView>
-          </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+          </ScrollView>
         );
       }}
     </Formik>
@@ -260,6 +270,16 @@ const styles = StyleSheet.create({
     color: "grey"
   },
   input: {
+    flex: 1,
+    padding: 2,
+    margin: 10,
+    marginLeft: 0,
+    marginRight: 10,
+    borderBottomColor: "grey",
+    borderBottomWidth: 1,
+    textAlignVertical: "top"
+  },
+  datepicker: {
     flex: 1,
     padding: 2,
     margin: 10,
